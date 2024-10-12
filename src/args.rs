@@ -34,48 +34,56 @@ use std::ops::Index;
 
 pub enum Arg {
     Required(String),
-    Optional(String),
-    Flag(String)
+    Optional(String)
 }
 
 pub struct Args {
-    program_name: String,
+    program_name: Option<String>,
     command_line: Vec<String>,
     args: HashMap<String, Arg>,
-    flags: HashSet<String>,
+    arg_names: Vec<String>,
+    flags: Vec<String>,
     arg_count: usize,
     possible_flags: HashSet<String>,
     error_list: Vec<String>
 }
 
 impl Args {
-    pub fn init() -> Self {
-        Self::init_with(env::args().skip(1).collect())
-    }
+    /// Creates a new `Self` populated with the command-line arguments.
+    pub fn new() -> Self {
+        let mut me = Self::from(env::args().skip(1).collect::<Vec<String>>());
+        me.program_name = env::args().nth(0);
 
-    pub fn init_with(args: Vec<String>) -> Self {
-        let mut me = Self {
-            program_name: String::new(),
-            command_line: Vec::new(),
-            flags: HashSet::new(),
-            args: HashMap::new(),
-            arg_count: 0,
-            possible_flags: HashSet::new(),
-            error_list: Vec::new()
-        };
-        
-        for arg in args {
-            if ['-', '+'].contains(&arg.chars().nth(0).unwrap()) {
-                me.flags.insert(arg);
-            }
-            else {
-                me.command_line.push(arg);
-            }
-        }
-        
         me
     }
 
+    /// Creates an empty `Self` without any parsed arguments.
+    /// 
+    /// Convenience method, used by `From` implementations that then populate
+    /// the arguments.
+    fn init_empty() -> Self {
+        Self {
+            program_name: None,
+            command_line: Vec::new(),
+            flags: Vec::new(),
+            args: HashMap::new(),
+            arg_names: Vec::new(),
+            arg_count: 0,
+            possible_flags: HashSet::new(),
+            error_list: Vec::new()
+        }
+    }
+
+    /// Specifies the name of a required field.
+    /// 
+    /// Required fields take an argument in the order that they are given on
+    /// the command-line. If the number of required fields specified exceeds
+    /// the number of command-line arguments given, it is considered an error
+    /// by `check()`.
+    /// 
+    /// A name cannot be repeated by multiple fields.
+    /// 
+    /// Panics if a required field is specified after an optional field.
     pub fn require(&mut self, name: &str) -> &mut Self {
         let name = String::from(name);
 
@@ -96,13 +104,23 @@ impl Args {
             self.error_list.push(format!("required argument '{name}' not found"));
         }
         else {
-            self.args.insert(name, Arg::Required(self.command_line[self.arg_count].clone()));
+            self.args.insert(name.clone(), Arg::Required(self.command_line[self.arg_count].clone()));
+            self.arg_names.push(name);
             self.arg_count += 1;
         }
         
         self
     }
 
+
+    /// Specifies the name of an optional field.
+    /// 
+    /// Optional fields take an argument in the order that they are given on
+    /// the command-line, after any required fields. If the number of required
+    /// fields specified exceeds the number of command-line arguments given,
+    /// it is *not* considered an error by `check()`.
+    /// 
+    /// A name cannot be repeated by multiple fields.
     pub fn optional(&mut self, name: &str) -> &mut Self {
         let name = String::from(name);
 
@@ -111,13 +129,25 @@ impl Args {
         }
 
         if self.arg_count < self.command_line.len() {
-            self.args.insert(name, Arg::Optional(self.command_line[self.arg_count].clone()));
+            self.args.insert(name.clone(), Arg::Optional(self.command_line[self.arg_count].clone()));
+            self.arg_names.push(name);
             self.arg_count += 1;
         }
 
         self
     }
 
+    /// Specifies the name of an optional flag.
+    /// 
+    /// Flags are any command-line argument that begins with `-` or `+`.
+    /// Panics if, when specifying the name of a flag, the qualifier is
+    /// not given.
+    /// 
+    /// This method does not need to be called for a flag to be found by
+    /// the `has_flag()` method. This method exists to build an example
+    /// command-line for `Display`.
+    /// 
+    /// Panics if a flag name is repeated.
     pub fn flag(&mut self, name: &str) -> &mut Self {
         if self.possible_flags.contains(&String::from(name)) {
             panic!("flag '{}' specified twice", name);
@@ -132,6 +162,8 @@ impl Args {
         todo!()
     }
 
+    /// Returns an error if any required fields are not found.
+    /// 
     pub fn check(&self) -> ArgsResult<&Self> {
         if self.error_list.is_empty() {
             Ok(self)
@@ -141,15 +173,14 @@ impl Args {
         }
     }
 
+    /// Gives the value of a named argument, or `None` if it was not
+    /// found.
     pub fn get_arg(&self, name: &str) -> Option<String> {
         let name = String::from(name);
 
-        println!("args[{}]", self.args.len());
-
         if self.args.contains_key(&name) {
             match &self.args[&name] {
-                Arg::Required(arg) => Some(arg.clone()),
-                Arg::Optional(arg) => Some(arg.clone()),
+                Arg::Required(arg) | Arg::Optional(arg) => Some(arg.clone()),
                 _ => None
             }
         }
@@ -158,8 +189,82 @@ impl Args {
         }
     }
 
+    /// Indicates whether a specific flag was found on the command-line
+    /// 
+    /// The flag does not have to have been previously specified with the
+    /// `flag()` method.
     pub fn has_flag(&self, name: &str) -> bool {
         self.flags.contains(&String::from(name))
+    }
+}
+
+impl Debug for Args {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("Args");
+        for arg in &self.arg_names {
+            let arg_type = match self.args[arg] {
+                Arg::Required(_) => "required",
+                Arg::Optional(_) => "optional"
+            };
+            f.field(arg_type, &arg);
+        }
+        for flag in &self.flags {
+            f.field("flag", &flag);
+        }
+        f.finish()
+    }
+}
+
+impl Display for Args {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("{}", self.program_name.clone().unwrap_or_default()));
+
+        for name in &self.arg_names {
+            match self.args[name] {
+                Arg::Required(_) => f.write_fmt(format_args!(" <{}>", name)),
+                Arg::Optional(_) => f.write_fmt(format_args!(" [{}]", name))
+            };
+        }
+
+        for flag in &self.flags {
+            f.write_fmt(format_args!(" [{}]", flag));
+        }
+
+        Ok(())
+    }
+}
+
+impl From<Vec<&str>> for Args {
+    fn from(args: Vec<&str>) -> Self {
+        let mut me = Self::init_empty();
+        
+        for arg in args {
+            if ['-', '+'].contains(&arg.chars().nth(0).unwrap()) {
+                me.flags.push(String::from(arg));
+            }
+            else {
+                me.command_line.push(String::from(arg));
+            }
+        }
+        
+        me
+    }
+}
+
+impl From<Vec<String>> for Args {
+    fn from(args: Vec<String>) -> Self {
+        let mut me = Self::init_empty();
+        
+        for arg in args {
+            if ['-', '+'].contains(&arg.chars().nth(0).unwrap()) {
+                me.flags.push(arg);
+            }
+            else {
+                me.command_line.push(arg);
+            }
+        }
+        
+        me
     }
 }
 

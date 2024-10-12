@@ -28,7 +28,7 @@
 mod tests {
     use crate::args;
 
-    fn to_string_vec(array: Vec<&str>) ->Vec<String> {
+    fn to_string_vec(array: Vec<&str>) -> Vec<String> {
         array.iter().map(|x| String::from(*x)).collect()
     }
 

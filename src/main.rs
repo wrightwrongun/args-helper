@@ -31,34 +31,38 @@ mod tests;
 
 use args::Args;
 
-// fn main() {
-//     let line = ["abc", "def", "-a", "lmn", "pqr", "xyz", "+x"].iter().map(|x| String::from(*x)).collect();
-//     // let line = ["abc"].iter().map(|x| String::from(*x)).collect();
+fn main() {
+    let line: Vec<_> = ["abc", "def", "-a", "lmn", "pqr", "xyz", "+x"].iter().map(|x| String::from(*x)).collect();
+    //let line: Vec<_> = ["abc", "def"].iter().map(|x| String::from(*x)).collect();
 
-//     let mut args = Args::init_with(line);
-//     let mut args = args
-//                 .require("one")
-//                 .require("two")
-//                 .require("three")
-//                 .optional("four")
-//                 .optional("five")
-//                 .flag("-a")
-//                 .flag("+x");
+    let mut args = Args::from(line);
+    let mut args = args
+                .require("one")
+                .require("two")
+                .require("three")
+                .optional("four")
+                .optional("five")
+                .flag("-a")
+                .flag("+x");
     
-//     match args.check() {
-//         Ok(args) => {
-//             println!("arg--> one = '{:?}'", args.get_arg("one"));
-//             println!("arg--> two = '{:?}'", args.get_arg("two"));
-//             println!("arg--> three = '{:?}'", args.get_arg("three"));
-//             println!("arg--> four = '{:?}'", args.get_arg("four"));
-//             println!("arg--> five = '{:?}'", args.get_arg("five"));
-//             println!("arg--> six = '{:?}'", args.get_arg("six"));
-//             println!("flag-> -a = {}", args.has_flag("-a"));
-//             println!("flag-> +x = {}", args.has_flag("+x"));
-//             println!("flag-> -z = {}", args.has_flag("-z"));
-//             },
-//         Err(e) => {
-//             eprintln!("args-error: {:?}", e);
-//         }
-//     }
-// }
+    match args.check() {
+        Ok(args) => {
+            println!("{}", args);
+            println!("{:?}", args);
+
+            println!("arg--> one = '{:?}'", args.get_arg("one"));
+            println!("arg--> two = '{:?}'", args.get_arg("two"));
+            println!("arg--> three = '{:?}'", args.get_arg("three"));
+            println!("arg--> four = '{:?}'", args.get_arg("four"));
+            println!("arg--> five = '{:?}'", args.get_arg("five"));
+            println!("arg--> six = '{:?}'", args.get_arg("six"));
+            println!("flag-> -a = {}", args.has_flag("-a"));
+            println!("flag-> +x = {}", args.has_flag("+x"));
+            println!("flag-> -z = {}", args.has_flag("-z"));
+            },
+        Err(e) => {
+            println!("{}", args);
+            eprintln!("args-error: {:?}", e);
+        }
+    }
+}
