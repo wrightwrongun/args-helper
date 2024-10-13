@@ -84,7 +84,7 @@ impl Args {
     /// A name cannot be repeated by multiple fields.
     /// 
     /// Panics if a required field is specified after an optional field.
-    pub fn require(&mut self, name: &str) -> &mut Self {
+    pub fn required(&mut self, name: &str) -> &mut Self {
         let name = String::from(name);
 
         if self.args.contains_key(&name) {
@@ -105,9 +105,10 @@ impl Args {
         }
         else {
             self.args.insert(name.clone(), Arg::Required(self.command_line[self.arg_count].clone()));
-            self.arg_names.push(name);
             self.arg_count += 1;
         }
+
+        self.arg_names.push(format!("<{}>", name.clone()));
         
         self
     }
@@ -130,9 +131,10 @@ impl Args {
 
         if self.arg_count < self.command_line.len() {
             self.args.insert(name.clone(), Arg::Optional(self.command_line[self.arg_count].clone()));
-            self.arg_names.push(name);
             self.arg_count += 1;
         }
+
+        self.arg_names.push(format!("[{}]", name.clone()));
 
         self
     }
@@ -201,14 +203,15 @@ impl Args {
 impl Debug for Args {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("Args");
-        for arg in &self.arg_names {
-            let arg_type = match self.args[arg] {
-                Arg::Required(_) => "required",
-                Arg::Optional(_) => "optional"
+        for name in &self.arg_names {
+            let arg_type = match name.chars().nth(0).unwrap_or_default() {
+                '<' => "required",
+                '[' => "optional",
+                _ => "arg"
             };
-            f.field(arg_type, &arg);
+            f.field(arg_type, &name);
         }
-        for flag in &self.flags {
+        for flag in &self.possible_flags {
             f.field("flag", &flag);
         }
         f.finish()
@@ -220,14 +223,11 @@ impl Display for Args {
         f.write_fmt(format_args!("{}", self.program_name.clone().unwrap_or_default()));
 
         for name in &self.arg_names {
-            match self.args[name] {
-                Arg::Required(_) => f.write_fmt(format_args!(" <{}>", name)),
-                Arg::Optional(_) => f.write_fmt(format_args!(" [{}]", name))
-            };
+            f.write_fmt(format_args!("{} ", name));
         }
 
-        for flag in &self.flags {
-            f.write_fmt(format_args!(" [{}]", flag));
+        for flag in &self.possible_flags {
+            f.write_fmt(format_args!("[{}] ", flag));
         }
 
         Ok(())
@@ -279,13 +279,9 @@ pub struct ArgsError {
 }
 
 impl ArgsError {
-    pub fn new(problem: String) -> Self {
-        Self::from(&[problem])        
-    }
-
-    pub fn from(problems: &[String]) -> Self {
-        ArgsError {
-            problems: Vec::from(problems)
+    fn new(problem: String) -> Self {
+        Self {
+            problems: Vec::from(&[problem])
         }
     }
 
@@ -321,5 +317,33 @@ impl Error for ArgsError {
 
     fn cause(&self) -> Option<&dyn Error> {
         self.source()
+    }
+}
+
+impl From<&str> for ArgsError {
+    fn from(value: &str) -> Self {
+        Self::new(String::from(value))
+    }
+}
+
+impl From<String> for ArgsError {
+    fn from(value: String) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<&[String]> for ArgsError {
+    fn from(value: &[String]) -> Self {
+        ArgsError {
+            problems: Vec::from(value)
+        }
+    }
+}
+
+impl From<&Vec<String>> for ArgsError {
+    fn from(value: &Vec<String>) -> Self {
+        ArgsError {
+            problems: value.clone()
+        }
     }
 }

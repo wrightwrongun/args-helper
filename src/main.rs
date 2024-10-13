@@ -37,13 +37,14 @@ fn main() {
 
     let mut args = Args::from(line);
     let mut args = args
-                .require("one")
-                .require("two")
-                .require("three")
+                .required("one")
+                .required("two")
+                .required("three")
                 .optional("four")
                 .optional("five")
                 .flag("-a")
-                .flag("+x");
+                .flag("+x")
+                .flag("-z");
     
     match args.check() {
         Ok(args) => {
