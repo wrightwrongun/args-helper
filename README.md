@@ -7,7 +7,7 @@ A simple utility library for simplifying the use of command-line arguments in **
 ## Build
 Grab the repository, and build with *Cargo*:
 ```
-    git clone <repo-url>
+    git clone https://github.com/wrightwrongun/args-helper
     cd args-helper
     cargo build
     cargo test
