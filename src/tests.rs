@@ -275,21 +275,21 @@ mod tests {
 
     #[test]
     fn args_has_flag_good() {
-        let mut args = Args::from(vec!["abc", "def", "xyz", "-a"]);
+        let args = Args::from(vec!["abc", "def", "xyz", "-a"]);
 
         assert!(args.has_flag("-a"));
     }
 
     #[test]
     fn args_has_flag_bad_1() {
-        let mut args = Args::from(vec!["abc", "def", "xyz", "-a"]);
+        let args = Args::from(vec!["abc", "def", "xyz", "-a"]);
 
         assert!(!args.has_flag("-b"));
     }
 
     #[test]
     fn args_has_flag_bad_2() {
-        let mut args = Args::from(vec!["abc", "def", "xyz"]);
+        let args = Args::from(vec!["abc", "def", "xyz"]);
 
         assert!(!args.has_flag("-a"));
     }

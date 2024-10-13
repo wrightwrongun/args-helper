@@ -103,7 +103,8 @@ If running the above code, with a *console* app called *'hello-world'* -
     .optional("xyz")
     .flag("-z);
 ```
-    is considered to be the same as:
+is considered to be the same as:
+
 ```rust
     args
     .required("abc")

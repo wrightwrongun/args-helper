@@ -24,43 +24,5 @@
 
 ---------------------------------------------------------------------------- */
 
-#![allow(dead_code, unused)]
-
 mod args;
 mod tests;
-
-use args::Args;
-
-fn main() {
-    let mut args = Args::new();
-    let mut args = args
-                    .required("name")
-                    .required("file")
-                    .optional("filter")
-                    .flag("-d")
-                    .flag("-v")
-                    .flag("+b");
-    
-    match args.check() {
-        Ok(args) => {
-            let name = args.get_arg("name").unwrap();
-            let file = args.get_arg("file").unwrap();
-            if let Some(filter) = args.get_arg("filter") {
-                println!("filter name is {}", filter);
-            }
-            else {
-                println!("no filter");
-            }
-
-            let is_debug = args.has_flag("-d");
-            let is_verbose = args.has_flag("-v");
-            let is_background = args.has_flag("+b");
-
-            // Do stuff..!
-
-        },
-        Err(e) => {
-            eprintln!("usage: {}", args); // Prints the app's command-line.
-        }
-    }
-}
