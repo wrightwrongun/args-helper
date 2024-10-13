@@ -30,13 +30,27 @@ use std::collections::{HashMap, HashSet};
 use std::env;
 use std::error::Error;
 use std::fmt::{Debug, Display};
-use std::ops::Index;
 use std::path::Path;
 
-pub enum Arg {
+
+enum Arg {
     Required(String),
     Optional(String)
 }
+
+impl Arg {
+    /// Gives the inner value for `Required` and `Optional`.
+    /// 
+    fn unwrap(&self) -> String {
+        match self {
+            Self::Required(arg) | Self::Optional(arg) => arg.clone()
+        }
+    }
+}
+
+
+//---------------------------------------------------------------------------//
+
 
 pub struct Args {
     program_name: Option<String>,
@@ -169,7 +183,7 @@ impl Args {
         self
     }
 
-    pub fn flag_required_or(&self, either: &str, or: &str) -> &mut Self {
+    pub fn flag_required_or(&self, _either: &str, _or: &str) -> &mut Self {
         todo!()
     }
 
@@ -186,18 +200,30 @@ impl Args {
 
     /// Gives the value of a named argument, or `None` if it was not
     /// found.
-    pub fn get_arg(&self, name: &str) -> Option<String> {
+    pub fn get(&self, name: &str) -> Option<String> {
         let name = String::from(name);
 
         if self.args.contains_key(&name) {
-            match &self.args[&name] {
-                Arg::Required(arg) | Arg::Optional(arg) => Some(arg.clone()),
-                _ => None
-            }
+            Some(self.args[&name].unwrap())
         }
         else {
             None
         }
+    }
+
+    /// Gives an unwrapped value for a named argumment.
+    /// 
+    /// Panics if the argument value was not found. Safe to use for
+    /// required arguments **after** `check()` gas been called and
+    /// not returned `Err()`.
+    pub fn get_unwrap(&self, name: &str) -> String {
+        let name = String::from(name);
+
+        if !self.args.contains_key(&name) {
+            panic!("argument '{}' not found", name);
+        }
+
+        self.args[&name].unwrap()
     }
 
     /// Indicates whether a specific flag was found on the command-line
@@ -245,14 +271,14 @@ impl Debug for Args {
 
 impl Display for Args {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.use_program_name(|n| {f.write_fmt(format_args!("{} ", n));});
+        self.use_program_name(|n| {let _ = f.write_fmt(format_args!("{} ", n));});
 
         for name in &self.arg_names {
-            f.write_fmt(format_args!("{} ", name));
+            let _ = f.write_fmt(format_args!("{} ", name));
         }
 
         for flag in &self.possible_flags {
-            f.write_fmt(format_args!("[{}] ", flag));
+            let _ = f.write_fmt(format_args!("[{}] ", flag));
         }
 
         Ok(())

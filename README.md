@@ -14,7 +14,9 @@ Grab the repository, and build with *Cargo*:
 ```
 
 ## Usage
-Usually used at the beginning of `main()`.e.g.
+Usually used at the beginning of `main()`.
+
+An example program:
 ```rust
 use args::Args;
 
@@ -30,8 +32,8 @@ fn main() {
         
         match args.check() {
             Ok(args) => {
-                let name = args.get_arg("name").unwrap();
-                let file = args.get_arg("file").unwrap();
+                let name = args.get_unwrap("name");
+                let file = args.get_unwrap("file");
                 if let Some(filter) = args.get_arg("filter") {
                     println!("filter is '{}'", filter);
                 }
@@ -52,9 +54,20 @@ fn main() {
         }
     }
 ```
+In this situation it is safe to `.unwrap()` any `required` arguments, as the
+call to `.check()` would have failed if they had not been found. To make this
+easier, a `.get_unwrap()` method is provided.
+
+These two lines produce the same result:
+```rust
+    let hello = args.get_unwrap("hello");
+    let hello = args.get("hello").unwrap();
+```
+Be careful when using `.get_unwrap()`. It is only safe to do so after calling
+`.check()` does not return an `Err()` result, and even then only on `required` arguments.
 
 ### Running
-If running the above code, with a *console* app called *'hello-world'* -
+If running the example program, in a *console* app called *'hello-world'* -
 1. With enough command-line arguments:
 ```
     hello-world kylie stuff.txt pretty
@@ -63,19 +76,22 @@ If running the above code, with a *console* app called *'hello-world'* -
 ```
     filter is 'pretty'
 ```
-1. Without enough command-line arguments:
+3. Without enough command-line arguments:
 ```
     hello-world
 ```
-2. Will result in printing:
+4. Will result in printing:
 ```
     usage: hello-world <name> <file> [filter] [-v] [-d] [+b]
 ```
 
 ## Notes
 - Field values are read from the command-line in the order that they are specified.
+
 - It is considered an error if there are not enough command-line arguments to populate every `required` field.
-- A call to `.check()` will return an  `Ok` if all required fields have been populated by command-line arguments, otherwise it returns  `Err()`. 
+
+- A call to `.check()` will return an  `Ok` if all required fields have been populated by command-line arguments, otherwise it returns  `Err()`.
+
 - Panics if an `optional` field is specified after a `required` field is specified. e.g.
 ```rust
     args
@@ -84,6 +100,7 @@ If running the above code, with a *console* app called *'hello-world'* -
     .required("three")  // <--- Panics here because of preceding line!
     .optional("four");
 ```
+
 - Panics if the same field name is specified twice, regardless of whether it is `required` or `optional`. e.g.
 ```rust
     args
@@ -91,8 +108,11 @@ If running the above code, with a *console* app called *'hello-world'* -
     .required("xyz")
     .optional("abc");   // <--- Panics here because of repeated name!
 ```
+
 - A command-line argument beginning with `-` or `+` is considered to be a flag, and is ignored when populating `required` and `optional` fields.
+
 - All flags are considered optional.
+
 - Flags can be specified before or after`required` or `optional` fields. e.g.
 ```rust
     args
@@ -114,7 +134,8 @@ is considered to be the same as:
     .flag("-x")
     .flag("-z);
 ```
-- Flags do not have to be specified using `.flag(name)` before a call to `.has_flag(name)`. The call to `.flag(name)` is used to build the usage string used in printing `args` to the console.
+
+- Flags do not have to be specified using `.flag(name)` before a call to `.has_flag(name)`. The call to `.flag(name)` is used to build the usage string used in printing `Args` to the console.
 
 ## ToDo
 - [x] Parse arguments.

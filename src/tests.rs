@@ -109,7 +109,7 @@ mod tests {
         let mut args = Args::from(vec!["abc", "def", "xyz"]);
         args.required("one");
 
-        assert_eq!(args.get_arg("one"), Some(String::from("abc")));
+        assert_eq!(args.get("one"), Some(String::from("abc")));
     }
 
     #[test]
@@ -119,9 +119,9 @@ mod tests {
         args.required("two");
         args.required("three");
 
-        assert_eq!(args.get_arg("one"), Some(String::from("abc")));
-        assert_eq!(args.get_arg("two"), Some(String::from("def")));
-        assert_eq!(args.get_arg("three"), Some(String::from("xyz")));
+        assert_eq!(args.get("one"), Some(String::from("abc")));
+        assert_eq!(args.get("two"), Some(String::from("def")));
+        assert_eq!(args.get("three"), Some(String::from("xyz")));
     }
 
     #[test]
@@ -129,7 +129,7 @@ mod tests {
         let mut args = Args::from(vec!["abc", "def", "xyz"]);
         args.optional("one");
 
-        assert_eq!(args.get_arg("one"), Some(String::from("abc")));
+        assert_eq!(args.get("one"), Some(String::from("abc")));
     }
 
     #[test]
@@ -139,9 +139,9 @@ mod tests {
         args.optional("two");
         args.optional("three");
 
-        assert_eq!(args.get_arg("one"), Some(String::from("abc")));
-        assert_eq!(args.get_arg("two"), Some(String::from("def")));
-        assert_eq!(args.get_arg("three"), Some(String::from("xyz")));
+        assert_eq!(args.get("one"), Some(String::from("abc")));
+        assert_eq!(args.get("two"), Some(String::from("def")));
+        assert_eq!(args.get("three"), Some(String::from("xyz")));
     }
 
     #[test]
@@ -151,9 +151,9 @@ mod tests {
         args.optional("two");
         args.optional("three");
 
-        assert_eq!(args.get_arg("one"), Some(String::from("abc")));
-        assert_eq!(args.get_arg("two"), Some(String::from("def")));
-        assert_eq!(args.get_arg("three"), Some(String::from("xyz")));
+        assert_eq!(args.get("one"), Some(String::from("abc")));
+        assert_eq!(args.get("two"), Some(String::from("def")));
+        assert_eq!(args.get("three"), Some(String::from("xyz")));
     }
 
     #[test]
@@ -164,9 +164,9 @@ mod tests {
         args.optional("two");
         args.optional("one");
 
-        assert_eq!(args.get_arg("one"), Some(String::from("abc")));
-        assert_eq!(args.get_arg("two"), Some(String::from("def")));
-        assert_eq!(args.get_arg("three"), Some(String::from("xyz")));
+        assert_eq!(args.get("one"), Some(String::from("abc")));
+        assert_eq!(args.get("two"), Some(String::from("def")));
+        assert_eq!(args.get("three"), Some(String::from("xyz")));
     }
 
     #[test]
@@ -177,9 +177,9 @@ mod tests {
         args.optional("two");
         args.required("three");
 
-        assert_eq!(args.get_arg("one"), Some(String::from("abc")));
-        assert_eq!(args.get_arg("two"), Some(String::from("def")));
-        assert_eq!(args.get_arg("three"), Some(String::from("xyz")));
+        assert_eq!(args.get("one"), Some(String::from("abc")));
+        assert_eq!(args.get("two"), Some(String::from("def")));
+        assert_eq!(args.get("three"), Some(String::from("xyz")));
     }
 
     #[test]
@@ -192,9 +192,9 @@ mod tests {
             .flag("-a")
             .flag("-b");
 
-        assert_eq!(args.get_arg("one"), Some(String::from("abc")));
-        assert_eq!(args.get_arg("two"), Some(String::from("def")));
-        assert_eq!(args.get_arg("three"), Some(String::from("xyz")));
+        assert_eq!(args.get("one"), Some(String::from("abc")));
+        assert_eq!(args.get("two"), Some(String::from("def")));
+        assert_eq!(args.get("three"), Some(String::from("xyz")));
     }
 
     #[test]
@@ -202,7 +202,7 @@ mod tests {
         let mut args = Args::from(vec!["abc"]);
         args.required("one");
 
-        assert_eq!(args.get_arg("one"), Some(String::from("abc")));
+        assert_eq!(args.get("one"), Some(String::from("abc")));
     }
 
     #[test]
@@ -211,8 +211,8 @@ mod tests {
         args.required("one")
             .required("two");
 
-        assert_eq!(args.get_arg("one"), Some(String::from("abc")));
-        assert_eq!(args.get_arg("two"), Some(String::from("def")));
+        assert_eq!(args.get("one"), Some(String::from("abc")));
+        assert_eq!(args.get("two"), Some(String::from("def")));
     }
 
     #[test]
@@ -220,7 +220,7 @@ mod tests {
         let mut args = Args::from(vec!["abc"]);
         args.optional("one");
 
-        assert_eq!(args.get_arg("one"), Some(String::from("abc")));
+        assert_eq!(args.get("one"), Some(String::from("abc")));
     }
 
     #[test]
@@ -230,9 +230,9 @@ mod tests {
             .optional("two")
             .optional("three");
 
-        assert_eq!(args.get_arg("one"), Some(String::from("abc")));
-        assert_eq!(args.get_arg("two"), Some(String::from("def")));
-        assert_eq!(args.get_arg("three"), Some(String::from("xyz")));
+        assert_eq!(args.get("one"), Some(String::from("abc")));
+        assert_eq!(args.get("two"), Some(String::from("def")));
+        assert_eq!(args.get("three"), Some(String::from("xyz")));
     }
 
     #[test]
@@ -242,9 +242,9 @@ mod tests {
             .required("two")
             .optional("three");
 
-        assert_eq!(args.get_arg("one"), Some(String::from("abc")));
-        assert_eq!(args.get_arg("two"), Some(String::from("def")));
-        assert_eq!(args.get_arg("three"), Some(String::from("xyz")));
+        assert_eq!(args.get("one"), Some(String::from("abc")));
+        assert_eq!(args.get("two"), Some(String::from("def")));
+        assert_eq!(args.get("three"), Some(String::from("xyz")));
     }
 
     #[test]
@@ -252,7 +252,7 @@ mod tests {
         let mut args = Args::from(vec!["abc"]);
         args.required("one");
 
-        assert!(args.get_arg("two").is_none());
+        assert!(args.get("two").is_none());
     }
 
     #[test]
@@ -260,7 +260,35 @@ mod tests {
         let mut args = Args::from(vec!["abc"]);
         args.optional("one");
 
-        assert!(args.get_arg("two").is_none());
+        assert!(args.get("two").is_none());
+    }
+
+    #[test]
+    fn args_get_unwrap_good() {
+        let mut args = Args::from(vec!["abc"]);
+        args.required("one");
+
+        assert_eq!(args.get_unwrap("one"), "abc");
+    }
+
+    #[test]
+    #[should_panic]
+    fn args_get_unwrap_required_bad() {
+        let mut args = Args::from(vec!["abc"]);
+        args.required("one")
+            .required("two");
+
+        args.get_unwrap("two");
+    }
+
+    #[test]
+    #[should_panic]
+    fn args_get_unwrap_optional_bad() {
+        let mut args = Args::from(vec!["abc"]);
+        args.required("one")
+            .optional("two");
+
+        args.get_unwrap("two");
     }
 
     #[test]
