@@ -45,6 +45,66 @@ mod tests {
     }
 
     #[test]
+    fn args_get_program_name_none() {
+        let mut args = Args::from(vec!["abc", "def"]);
+
+        args.set_program_name(None);
+
+        args.required("one")
+            .optional("two");
+
+        assert_eq!(args.get_program_name(), None);
+    }
+
+    #[test]
+    fn args_get_program_name_some() {
+        let mut args = Args::from(vec!["abc", "def"]);
+
+        args.set_program_name(Some(String::from("yada-yada")));
+
+        args.required("one")
+            .optional("two");
+
+        assert_eq!(args.get_program_name(), Some(String::from("yada-yada")));
+    }
+
+    #[test]
+    fn args_set_program_name_none() {
+        let mut args = Args::from(vec!["abc", "def"]);
+
+        args.set_program_name(None);
+
+        args.required("one")
+            .optional("two");
+
+        assert_eq!(format!("{}", args), "<one> [two] ");
+    }
+
+    #[test]
+    fn args_set_program_name_some_no_path() {
+        let mut args = Args::from(vec!["abc", "def"]);
+
+        args.set_program_name(Some(String::from("hello-world")));
+
+        args.required("one")
+            .optional("two");
+
+        assert_eq!(format!("{}", args), "hello-world <one> [two] ");
+    }
+
+    #[test]
+    fn args_set_program_name_some_with_path() {
+        let mut args = Args::from(vec!["abc", "def"]);
+
+        args.set_program_name(Some(String::from("/x/y/z/hello-world")));
+
+        args.required("one")
+            .optional("two");
+
+        assert_eq!(format!("{}", args), "hello-world <one> [two] ");
+    }
+
+    #[test]
     fn args_require() {
         let mut args = Args::from(vec!["abc", "def", "xyz"]);
         args.required("one");
@@ -280,7 +340,7 @@ mod tests {
             .optional("two")
             .flag("+x");
 
-        assert_eq!(format!("{}", args), String::from("<one> [two] [+x] "));
+        assert_eq!(format!("{}", args), "<one> [two] [+x] ");
     }
 
     #[test]
@@ -290,7 +350,43 @@ mod tests {
             .optional("two")
             .flag("+x");
 
-        assert_eq!(format!("{}", args), String::from("<one> [two] [+x] "));
+        assert_eq!(format!("{}", args), "<one> [two] [+x] ");
+    }
+
+    #[test]
+    fn args_display_no_program_name() {
+        let mut args = Args::from(vec!["abc", "def"]);
+
+        args.set_program_name(None);
+
+        args.required("one")
+            .optional("two");
+
+        assert_eq!(format!("{}", args), "<one> [two] ");
+    }
+
+    #[test]
+    fn args_display_with_program_name() {
+        let mut args = Args::from(vec!["abc", "def"]);
+
+        args.set_program_name(Some(String::from("hello-world")));
+
+        args.required("one")
+            .optional("two");
+
+        assert_eq!(format!("{}", args), "hello-world <one> [two] ");
+    }
+
+    #[test]
+    fn args_display_with_program_name_path() {
+        let mut args = Args::from(vec!["abc", "def"]);
+
+        args.set_program_name(Some(String::from("/x/y/z/hello-world")));
+
+        args.required("one")
+            .optional("two");
+
+        assert_eq!(format!("{}", args), "hello-world <one> [two] ");
     }
 
     #[test]
@@ -300,7 +396,7 @@ mod tests {
             .optional("two")
             .flag("+x");
 
-        assert_eq!(format!("{:?}", args), String::from("Args { required: \"<one>\", optional: \"[two]\", flag: \"+x\" }"));
+        assert_eq!(format!("{:?}", args), "Args { required: \"<one>\", optional: \"[two]\", flag: \"+x\" }");
     }
 
     #[test]
@@ -310,7 +406,43 @@ mod tests {
             .optional("two")
             .flag("+x");
 
-        assert_eq!(format!("{:?}", args), String::from("Args { required: \"<one>\", optional: \"[two]\", flag: \"+x\" }"));
+        assert_eq!(format!("{:?}", args), "Args { required: \"<one>\", optional: \"[two]\", flag: \"+x\" }");
+    }
+
+    #[test]
+    fn args_debug_no_program_name() {
+        let mut args = Args::from(vec!["abc", "def"]);
+
+        args.set_program_name(None);
+
+        args.required("one")
+            .optional("two");
+
+        assert_eq!(format!("{:?}", args), "Args { required: \"<one>\", optional: \"[two]\" }");
+    }
+
+    #[test]
+    fn args_debug_with_program_name() {
+        let mut args = Args::from(vec!["abc", "def"]);
+
+        args.set_program_name(Some(String::from("hello-world")));
+
+        args.required("one")
+            .optional("two");
+
+        assert_eq!(format!("{:?}", args), "Args { program_name: \"hello-world\", required: \"<one>\", optional: \"[two]\" }");
+    }
+
+    #[test]
+    fn args_debug_with_program_name_path() {
+        let mut args = Args::from(vec!["abc", "def"]);
+
+        args.set_program_name(Some(String::from("/x/y/z/hello-world")));
+
+        args.required("one")
+            .optional("two");
+
+        assert_eq!(format!("{:?}", args), "Args { program_name: \"hello-world\", required: \"<one>\", optional: \"[two]\" }");
     }
 
     #[test]
@@ -352,27 +484,27 @@ mod tests {
     fn argserror_debug_1() {
         let error = ArgsError::from("one");
 
-        assert_eq!(format!("{:?}", error), String::from("ArgsError { error: \"one\" }"));
+        assert_eq!(format!("{:?}", error), "ArgsError { error: \"one\" }");
     }
 
     #[test]
     fn argserror_debug_2() {
         let error = ArgsError::from(&to_string_vec(vec!["one", "two", "three"]));
 
-        assert_eq!(format!("{:?}", error), String::from("ArgsError { error: \"one\", error: \"two\", error: \"three\" }"));
+        assert_eq!(format!("{:?}", error), "ArgsError { error: \"one\", error: \"two\", error: \"three\" }");
     }
 
     #[test]
     fn argserror_display_1() {
         let error = ArgsError::from("one");
 
-        assert_eq!(format!("{}", error), String::from("ArgsError - 1 problems"));
+        assert_eq!(format!("{}", error), "ArgsError - 1 problems");
     }
 
     #[test]
     fn argserror_display_2() {
         let error = ArgsError::from(&to_string_vec(vec!["one", "two", "three"]));
 
-        assert_eq!(format!("{}", error), String::from("ArgsError - 3 problems"));
+        assert_eq!(format!("{}", error), "ArgsError - 3 problems");
     }
 }

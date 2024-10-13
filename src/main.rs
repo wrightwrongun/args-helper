@@ -32,38 +32,35 @@ mod tests;
 use args::Args;
 
 fn main() {
-    let line: Vec<_> = ["abc", "def", "-a", "lmn", "pqr", "xyz", "+x"].iter().map(|x| String::from(*x)).collect();
-    //let line: Vec<_> = ["abc", "def"].iter().map(|x| String::from(*x)).collect();
-
-    let mut args = Args::from(line);
+    let mut args = Args::new();
     let mut args = args
-                .required("one")
-                .required("two")
-                .required("three")
-                .optional("four")
-                .optional("five")
-                .flag("-a")
-                .flag("+x")
-                .flag("-z");
+                    .required("name")
+                    .required("file")
+                    .optional("filter")
+                    .flag("-d")
+                    .flag("-v")
+                    .flag("+b");
     
     match args.check() {
         Ok(args) => {
-            println!("{}", args);
-            println!("{:?}", args);
+            let name = args.get_arg("name").unwrap();
+            let file = args.get_arg("file").unwrap();
+            if let Some(filter) = args.get_arg("filter") {
+                println!("filter name is {}", filter);
+            }
+            else {
+                println!("no filter");
+            }
 
-            println!("arg--> one = '{:?}'", args.get_arg("one"));
-            println!("arg--> two = '{:?}'", args.get_arg("two"));
-            println!("arg--> three = '{:?}'", args.get_arg("three"));
-            println!("arg--> four = '{:?}'", args.get_arg("four"));
-            println!("arg--> five = '{:?}'", args.get_arg("five"));
-            println!("arg--> six = '{:?}'", args.get_arg("six"));
-            println!("flag-> -a = {}", args.has_flag("-a"));
-            println!("flag-> +x = {}", args.has_flag("+x"));
-            println!("flag-> -z = {}", args.has_flag("-z"));
-            },
+            let is_debug = args.has_flag("-d");
+            let is_verbose = args.has_flag("-v");
+            let is_background = args.has_flag("+b");
+
+            // Do stuff..!
+
+        },
         Err(e) => {
-            println!("{}", args);
-            eprintln!("args-error: {:?}", e);
+            eprintln!("usage: {}", args); // Prints the app's command-line.
         }
     }
 }

@@ -31,6 +31,7 @@ use std::env;
 use std::error::Error;
 use std::fmt::{Debug, Display};
 use std::ops::Index;
+use std::path::Path;
 
 pub enum Arg {
     Required(String),
@@ -72,6 +73,14 @@ impl Args {
             possible_flags: HashSet::new(),
             error_list: Vec::new()
         }
+    }
+
+    pub fn get_program_name(&self) -> Option<String> {
+        self.program_name.clone()
+    }
+
+    pub fn set_program_name(&mut self, name: Option<String>) {
+        self.program_name = name.clone();
     }
 
     /// Specifies the name of a required field.
@@ -198,11 +207,25 @@ impl Args {
     pub fn has_flag(&self, name: &str) -> bool {
         self.flags.contains(&String::from(name))
     }
+
+    /// Helper function to use the `program_name` field, if it is valid.
+    /// 
+    /// Used by `Debug` and `Display`.
+    fn use_program_name(&self, mut f: impl FnMut(&str)) {
+        if let Some(program_name) = &self.program_name.clone() {
+            if let Some(path) = Path::new::<String>(program_name).file_name() {
+                f(path.to_str().unwrap_or_default());
+            }
+        }
+    }
 }
 
 impl Debug for Args {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("Args");
+        
+        self.use_program_name(|n| {f.field("program_name", &n);});
+
         for name in &self.arg_names {
             let arg_type = match name.chars().nth(0).unwrap_or_default() {
                 '<' => "required",
@@ -211,16 +234,18 @@ impl Debug for Args {
             };
             f.field(arg_type, &name);
         }
+        
         for flag in &self.possible_flags {
             f.field("flag", &flag);
         }
+
         f.finish()
     }
 }
 
 impl Display for Args {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!("{}", self.program_name.clone().unwrap_or_default()));
+        self.use_program_name(|n| {f.write_fmt(format_args!("{} ", n));});
 
         for name in &self.arg_names {
             f.write_fmt(format_args!("{} ", name));
