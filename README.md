@@ -117,9 +117,9 @@ is considered to be the same as:
 - Flags do not have to be specified using `.flag(name)` before a call to `.has_flag(name)`. The call to `.flag(name)` is used to build the usage string used in printing `args` to the console.
 
 ## ToDo
-- [x] Parse arguments
-- [x] Output usage information to console
-- [ ] Add argument descriptions for enhanced usage information
+- [x] Parse arguments.
+- [x] Output usage information to console.
+- [ ] Add argument descriptions for enhanced usage information.
 - [ ] Add functionality for required flags.
 
 ## Help
